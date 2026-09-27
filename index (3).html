@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>90 Days Java Developer Challenge</title>
+<style>
+:root{
+  --bg:#f6f7fb; --surface:#ffffff; --text:#171a2b; --muted:#6b7086; --border:#e4e6ef;
+  --brand:#3454d1; --brand-dark:#233a9e; --accent:#f5a623; --green:#2fb380; --red:#e5484d; --yellow:#f0b429;
+  --radius:14px; --shadow:0 2px 10px rgba(23,26,43,.06);
+}
+[data-theme="dark"]{
+  --bg:#12131c; --surface:#1b1d2b; --text:#eef0fb; --muted:#9198b8; --border:#2b2e42;
+  --brand:#6d87ff; --brand-dark:#8ea0ff; --accent:#ffb84d; --shadow:0 2px 12px rgba(0,0,0,.4);
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:'Segoe UI',system-ui,-apple-system,Arial,sans-serif;background:var(--bg);color:var(--text);transition:background .2s,color .2s}
+h1,h2,h3{font-family:'Trebuchet MS',system-ui,sans-serif;margin:0 0 6px}
+button{font-family:inherit;cursor:pointer}
+.app{display:flex;min-height:100vh}
+.sidebar{width:240px;background:var(--surface);border-right:1px solid var(--border);padding:20px 12px;position:sticky;top:0;height:100vh;flex-shrink:0}
+.brand{font-weight:700;font-size:18px;padding:0 10px 18px;color:var(--brand)}
+.nav-item{display:flex;align-items:center;gap:10px;padding:11px 12px;border-radius:10px;color:var(--muted);text-decoration:none;font-size:14.5px;margin-bottom:2px;background:none;border:none;width:100%;text-align:left}
+.nav-item:hover{background:var(--bg)}
+.nav-item.active{background:var(--brand);color:#fff}
+.main{flex:1;padding:26px 30px 90px;max-width:1100px;margin:0 auto;width:100%}
+.section{display:none}
+.section.active{display:block;animation:fade .25s ease}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+.theme-btn{border:1px solid var(--border);background:var(--surface);color:var(--text);border-radius:10px;padding:8px 12px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow)}
+.grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px}
+.stat b{font-size:26px;display:block}
+.stat span{color:var(--muted);font-size:13px}
+.bar{height:12px;background:var(--border);border-radius:8px;overflow:hidden;margin-top:8px}
+.bar>i{display:block;height:100%;background:linear-gradient(90deg,var(--brand),var(--accent));border-radius:8px;transition:width .4s}
+.motiv{margin:16px 0;padding:14px 18px;border-radius:var(--radius);background:linear-gradient(90deg,var(--brand),var(--brand-dark));color:#fff;font-weight:600}
+.phase-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:18px 0}
+.phase-card h3{font-size:14px}
+.roadmap-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;margin-top:14px}
+.day-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px;cursor:pointer;position:relative}
+.day-card.done{border-color:var(--green);background:rgba(47,179,128,.08)}
+.day-card.selected{outline:2px solid var(--brand)}
+.day-card b{font-size:13px;color:var(--brand)}
+.day-card p{font-size:12.5px;margin:4px 0 8px;color:var(--text);min-height:32px}
+.day-card input{transform:scale(1.15)}
+.badge{font-size:11px;padding:2px 8px;border-radius:20px;background:var(--border);color:var(--muted)}
+.task-row{display:flex;align-items:center;gap:10px;padding:10px 6px;border-bottom:1px solid var(--border)}
+.task-row.done .t-text{text-decoration:line-through;color:var(--muted)}
+.t-text{flex:1;font-size:14.5px}
+select.pri{border:none;background:transparent;font-size:14px}
+.small-btn{border:1px solid var(--border);background:var(--surface);color:var(--muted);border-radius:8px;padding:4px 9px;font-size:12px}
+.small-btn:hover{color:var(--brand);border-color:var(--brand)}
+.filters{display:flex;gap:8px;margin:14px 0}
+.filter-btn{border:1px solid var(--border);background:var(--surface);color:var(--text);border-radius:20px;padding:6px 14px;font-size:13px}
+.filter-btn.active{background:var(--brand);color:#fff;border-color:var(--brand)}
+.add-row{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap}
+.add-row input,.add-row select{padding:9px 12px;border-radius:10px;border:1px solid var(--border);background:var(--bg);color:var(--text)}
+.add-row input[type=text]{flex:1;min-width:160px}
+.primary-btn{background:var(--brand);color:#fff;border:none;border-radius:10px;padding:9px 16px;font-weight:600}
+.due{font-size:11px;padding:2px 8px;border-radius:20px}
+.due.today{background:#fff4dd;color:#8a5a00}
+.due.tomorrow{background:#e8f0ff;color:var(--brand)}
+.due.overdue{background:#ffe1e1;color:var(--red)}
+.due.upcoming{background:var(--border);color:var(--muted)}
+[data-theme=dark] .due.today{background:#3a2c0f}
+[data-theme=dark] .due.tomorrow{background:#1e2a4a}
+[data-theme=dark] .due.overdue{background:#3a1a1c}
+.streak-flex{display:flex;gap:16px;flex-wrap:wrap}
+.streak-box{flex:1;min-width:150px;text-align:center}
+.streak-box b{font-size:34px;display:block}
+.habit-table{width:100%;border-collapse:collapse;margin-top:12px;font-size:13px}
+.habit-table th,.habit-table td{border:1px solid var(--border);padding:8px;text-align:center}
+.habit-table td{cursor:pointer}
+.habit-table td.on{background:var(--green);color:#fff}
+.project-card{margin-bottom:14px}
+.status-pill{border:none;border-radius:20px;padding:5px 12px;font-size:12px;font-weight:600;cursor:pointer}
+.status-planned{background:var(--border);color:var(--muted)}
+.status-progress{background:#fff4dd;color:#8a5a00}
+.status-completed{background:var(--green);color:#fff}
+table.jobs{width:100%;border-collapse:collapse;margin-top:10px;font-size:13.5px}
+table.jobs th,table.jobs td{padding:9px 8px;border-bottom:1px solid var(--border);text-align:left}
+input[type=text],input[type=date],input[type=url],textarea{font-family:inherit}
+textarea{width:100%;min-height:140px;padding:12px;border-radius:10px;border:1px solid var(--border);background:var(--bg);color:var(--text);resize:vertical}
+.settings-row{display:flex;justify-content:space-between;align-items:center;padding:14px 0;border-bottom:1px solid var(--border)}
+.danger{color:var(--red);border-color:var(--red)}
+.bottom-nav{display:none}
+h2.section-title{margin-bottom:2px}
+.subtle{color:var(--muted);font-size:13.5px;margin-bottom:16px}
+@media(max-width:900px){
+  .sidebar{display:none}
+  .grid-4{grid-template-columns:repeat(2,1fr)}
+  .phase-row{grid-template-columns:repeat(2,1fr)}
+  .main{padding:16px 16px 90px}
+  .bottom-nav{display:flex;position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-top:1px solid var(--border);z-index:50;overflow-x:auto}
+  .bottom-nav button{flex:1;min-width:70px;background:none;border:none;color:var(--muted);font-size:10.5px;padding:9px 2px;display:flex;flex-direction:column;align-items:center;gap:3px}
+  .bottom-nav button.active{color:var(--brand)}
+  .bottom-nav button span.ic{font-size:17px}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="sidebar" id="sidebar">
+    <div class="brand">☕ Java90</div>
+    <button class="nav-item active" data-nav="dashboard">🏠 Dashboard</button>
+    <button class="nav-item" data-nav="roadmap">📅 90-Day Roadmap</button>
+    <button class="nav-item" data-nav="today">✅ Today's Tasks</button>
+    <button class="nav-item" data-nav="learning">📚 Learning Path</button>
+    <button class="nav-item" data-nav="projects">💻 Projects</button>
+    <button class="nav-item" data-nav="streak">🔥 Streak & Habits</button>
+    <button class="nav-item" data-nav="jobs">💼 Job Applications</button>
+    <button class="nav-item" data-nav="notes">📝 Notes</button>
+    <button class="nav-item" data-nav="settings">⚙️ Settings</button>
+  </div>
+
+  <div class="main">
+    <div class="topbar">
+      <div><strong id="hdr-title">Dashboard</strong></div>
+      <button class="theme-btn" id="themeBtn">🌙 Dark Mode</button>
+    </div>
+
+    <!-- DASHBOARD -->
+    <section class="section active" id="sec-dashboard">
+      <h1>90 DAYS JAVA DEVELOPER CHALLENGE 🚀</h1>
+      <p class="subtle">From Beginner to Job-Ready Java Developer</p>
+      <div class="motiv" id="motivBox"></div>
+      <div class="grid-4">
+        <div class="card stat"><b id="d-day">Day 1/90</b><span>Current Day</span></div>
+        <div class="card stat"><b id="d-date"></b><span>Today's Date</span></div>
+        <div class="card stat"><b id="d-completed">0</b><span>Days Completed</span></div>
+        <div class="card stat"><b id="d-remaining">90</b><span>Days Remaining</span></div>
+      </div>
+      <div class="card">
+        <h3>Overall Progress — <span id="d-pct">0%</span></h3>
+        <div class="bar"><i id="d-bar" style="width:0%"></i></div>
+      </div>
+      <h2 style="margin-top:22px">Phase Progress</h2>
+      <div class="phase-row" id="phaseRow"></div>
+    </section>
+
+    <!-- ROADMAP -->
+    <section class="section" id="sec-roadmap">
+      <h2 class="section-title">My 90-Day Roadmap</h2>
+      <p class="subtle">Click a day to open its tasks. Check the box to mark it complete.</p>
+      <div class="roadmap-grid" id="roadmapGrid"></div>
+    </section>
+
+    <!-- TODAY -->
+    <section class="section" id="sec-today">
+      <h2 class="section-title">Today's Tasks — <span id="td-day-label">Day 1</span></h2>
+      <p class="subtle" id="td-topic"></p>
+      <div class="card">
+        <strong>Today's Progress: <span id="td-progress">0/6</span> completed</strong>
+        <div class="bar"><i id="td-bar" style="width:0%"></i></div>
+      </div>
+      <h3 style="margin-top:18px">Checklist</h3>
+      <div id="defaultTasks"></div>
+
+      <h3 style="margin-top:18px">Quick Add Task</h3>
+      <div class="add-row">
+        <input type="text" id="newTaskText" placeholder="Add your own task...">
+        <select id="newTaskPri"><option value="High">🔴 High</option><option value="Medium" selected>🟡 Medium</option><option value="Low">🟢 Low</option></select>
+        <input type="date" id="newTaskDue">
+        <button class="primary-btn" id="addTaskBtn">Add Task</button>
+      </div>
+      <div class="filters">
+        <button class="filter-btn active" data-filter="all">All</button>
+        <button class="filter-btn" data-filter="active">Active</button>
+        <button class="filter-btn" data-filter="completed">Completed</button>
+        <button class="filter-btn" id="clearCompleted">Clear Completed</button>
+      </div>
+      <div id="customTasks"></div>
+    </section>
+
+    <!-- LEARNING -->
+    <section class="section" id="sec-learning">
+      <h2 class="section-title">Java Learning Roadmap</h2>
+      <p class="subtle">Core Java → Collections & SQL → Spring Boot → Projects & Job Prep</p>
+      <div id="learningList"></div>
+    </section>
+
+    <!-- PROJECTS -->
+    <section class="section" id="sec-projects">
+      <h2 class="section-title">My Projects</h2>
+      <div id="projectsList"></div>
+    </section>
+
+    <!-- STREAK -->
+    <section class="section" id="sec-streak">
+      <h2 class="section-title">Study Streak</h2>
+      <div class="card streak-flex">
+        <div class="streak-box"><b id="s-current">0</b><span>🔥 Current Streak (days)</span></div>
+        <div class="streak-box"><b id="s-longest">0</b><span>🏆 Longest Streak (days)</span></div>
+      </div>
+      <p class="subtle" style="margin-top:14px">Complete all 6 checklist items for a day to grow your streak. Missing a day resets it.</p>
+      <h2 style="margin-top:24px">Habit Tracker (this week)</h2>
+      <div id="habitTable"></div>
+    </section>
+
+    <!-- JOBS -->
+    <section class="section" id="sec-jobs">
+      <h2 class="section-title">Job Applications</h2>
+      <div class="grid-4" id="jobStats"></div>
+      <div class="add-row">
+        <input type="text" id="jobCompany" placeholder="Company">
+        <input type="text" id="jobRole" placeholder="Job Role">
+        <input type="date" id="jobDate">
+        <input type="url" id="jobLink" placeholder="Application link">
+        <select id="jobStatus"><option>Applied</option><option>Assessment</option><option>Interview</option><option>Selected</option><option>Rejected</option></select>
+        <button class="primary-btn" id="addJobBtn">Add</button>
+      </div>
+      <div style="overflow-x:auto"><table class="jobs" id="jobsTable"></table></div>
+    </section>
+
+    <!-- NOTES -->
+    <section class="section" id="sec-notes">
+      <h2 class="section-title">My Learning Notes — <span id="notesDayLabel">Day 1</span></h2>
+      <p class="subtle">Notes are saved per day automatically.</p>
+      <textarea id="notesArea" placeholder="What I learned today..."></textarea>
+    </section>
+
+    <!-- SETTINGS -->
+    <section class="section" id="sec-settings">
+      <h2 class="section-title">Settings</h2>
+      <div class="card">
+        <div class="settings-row"><span>Theme</span><button class="theme-btn" id="themeBtn2">Toggle</button></div>
+        <div class="settings-row"><span>Export all progress as JSON</span><button class="small-btn" id="exportBtn">Export Progress</button></div>
+        <div class="settings-row"><span>Import progress from JSON</span><label class="small-btn" style="cursor:pointer">Import Progress<input type="file" id="importFile" accept=".json" style="display:none"></label></div>
+        <div class="settings-row"><span>Reset everything</span><button class="small-btn danger" id="resetBtn">Reset All Progress</button></div>
+      </div>
+    </section>
+  </div>
+</div>
+
+<div class="bottom-nav">
+  <button data-nav="dashboard" class="active"><span class="ic">🏠</span>Home</button>
+  <button data-nav="roadmap"><span class="ic">📅</span>Road</button>
+  <button data-nav="today"><span class="ic">✅</span>Tasks</button>
+  <button data-nav="learning"><span class="ic">📚</span>Learn</button>
+  <button data-nav="projects"><span class="ic">💻</span>Proj</button>
+  <button data-nav="streak"><span class="ic">🔥</span>Streak</button>
+  <button data-nav="jobs"><span class="ic">💼</span>Jobs</button>
+  <button data-nav="notes"><span class="ic">📝</span>Notes</button>
+  <button data-nav="settings"><span class="ic">⚙️</span>More</button>
+</div>
+
+<script>
+const TOPICS = ["JDK, JVM, JRE, Java Program Structure","Variables and Data Types","Operators","Scanner and User Input","if, else, switch","for, while, do-while loops","Revision + Practice","Methods","Method Parameters and Return","Arrays","2D Arrays","Strings","String Methods","Revision + Practice","Class and Object","Constructor","this Keyword","Encapsulation","Inheritance","Method Overloading","Method Overriding","Polymorphism","Abstraction","Interface","OOP Revision","Exception Handling","try-catch-finally, throw, throws","File Handling","Packages and Access Modifiers","Core Java Mini Project","ArrayList","LinkedList","HashSet","HashMap","Queue and Stack","Collections Revision","Sorting and Searching","DSA Arrays","DSA Strings","DSA Practice","MySQL Introduction","SELECT, WHERE, ORDER BY","INSERT, UPDATE, DELETE","Primary Key and Foreign Key","JOINs","GROUP BY and HAVING","Subqueries","SQL Practice","SQL Interview Questions","SQL Mini Project","Spring Boot Introduction","Spring Boot Project Structure","Maven and Dependencies","Controller","REST API","GET and POST","PUT and DELETE","PathVariable and RequestParam","RequestBody and ResponseBody","First REST API","Service Layer","Repository Layer","DTO Basics","Spring Boot + MySQL","JPA","Hibernate","Entity Relationships","CRUD Application","Validation","Exception Handling","Postman","API Testing","Git Basics","GitHub","Complete CRUD Backend Project","SmartGate Project Setup","Visitor Request Module","Staff Verification Module","Approve / Reject Module","Gate Entry Module","SmartGate API Testing","SmartGate Bug Fixing","Second Project Planning","Second Project Development","Java Interview Preparation","SQL Interview Preparation","Spring Boot Interview Preparation","Project Explanation Practice","Resume + Mock Interview","Final Review + Job Applications 🚀"];
+const PHASES=[{name:"Core Java",from:1,to:30},{name:"Collections + SQL",from:31,to:50},{name:"Spring Boot",from:51,to:75},{name:"Projects + Job Prep",from:76,to:90}];
+const DEF_KEY="java90_state_v1";
+
+function defaultState(){
+  return {startDate:new Date().toISOString().slice(0,10), selectedDay:1, notesDay:1,
+    completedDays:{}, dayChecklist:{}, customTasks:[], notes:{}, theme:"light",
+    streak:{current:0, longest:0, lastDate:null},
+    projects:[
+      {id:1,name:"SmartGate — College Visitor Management System",tech:"Java, Spring Boot, MySQL, REST API, Postman, Git/GitHub",status:"Planned"},
+      {id:2,name:"Employee Management System / Library Management System",tech:"Java, Spring Boot, MySQL",status:"Planned"}],
+    habits:{}, jobs:[]};
+}
+let S = JSON.parse(localStorage.getItem(DEF_KEY)||"null") || defaultState();
+function save(){localStorage.setItem(DEF_KEY, JSON.stringify(S));}
+
+function todayStr(){return new Date().toISOString().slice(0,10);}
+function currentDayNum(){
+  const start=new Date(S.startDate); const now=new Date(todayStr());
+  const diff=Math.floor((now-start)/86400000)+1;
+  return Math.min(90, Math.max(1,diff));
+}
+function phaseOf(day){return PHASES.find(p=>day>=p.from&&day<=p.to);}
+function checklistFor(day){
+  if(!S.dayChecklist[day]) S.dayChecklist[day]=[
+    {t:`Watch/read about: ${TOPICS[day-1]}`,done:false},
+    {t:`Take notes on ${TOPICS[day-1]}`,done:false},
+    {t:`Write/practice 3 code examples`,done:false},
+    {t:`Practice for 30 minutes`,done:false},
+    {t:`Write down what I learned`,done:false},
+    {t:`Complete today's challenge`,done:false}];
+  return S.dayChecklist[day];
+}
+function motivation(){
+  const d=currentDayNum(), done=Object.keys(S.completedDays).length;
+  if(done>=90) return "You completed your 90-day challenge! 🎉";
+  if(d>=60) return "You're building real backend skills!";
+  if(d>=30) return "Core Java completed! 🔥 Keep pushing.";
+  if(d>=10) return "10+ days in. Keep going!";
+  if(d<=1) return "Your journey starts today. 🚀";
+  return "Don't aim for perfect. Aim for consistent.";
+}
+
+function setActiveNav(name){
+  document.querySelectorAll('.nav-item,.bottom-nav button').forEach(b=>b.classList.toggle('active', b.dataset.nav===name));
+  document.querySelectorAll('.section').forEach(s=>s.classList.toggle('active', s.id==='sec-'+name));
+  document.getElementById('hdr-title').textContent = document.querySelector(`.nav-item[data-nav="${name}"]`).textContent.trim();
+}
+document.querySelectorAll('[data-nav]').forEach(b=>b.addEventListener('click',()=>{setActiveNav(b.dataset.nav); renderAll();}));
+
+function applyTheme(){document.documentElement.setAttribute('data-theme', S.theme); 
+  const label = S.theme==='dark' ? '☀️ Light Mode':'🌙 Dark Mode';
+  document.getElementById('themeBtn').textContent=label; document.getElementById('themeBtn2').textContent=label;}
+function toggleTheme(){S.theme = S.theme==='dark'?'light':'dark'; save(); applyTheme();}
+document.getElementById('themeBtn').onclick=toggleTheme;
+document.getElementById('themeBtn2').onclick=toggleTheme;
+
+function renderDashboard(){
+  const day=currentDayNum(), done=Object.keys(S.completedDays).length, pct=Math.round(done/90*100);
+  document.getElementById('d-day').textContent=`Day ${day}/90`;
+  document.getElementById('d-date').textContent=new Date().toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'});
+  document.getElementById('d-completed').textContent=done;
+  document.getElementById('d-remaining').textContent=90-done;
+  document.getElementById('d-pct').textContent=pct+'%';
+  document.getElementById('d-bar').style.width=pct+'%';
+  document.getElementById('motivBox').textContent='❤️ '+motivation();
+  const row=document.getElementById('phaseRow'); row.innerHTML='';
+  PHASES.forEach(p=>{
+    let c=0; for(let i=p.from;i<=p.to;i++) if(S.completedDays[i]) c++;
+    const total=p.to-p.from+1, pc=Math.round(c/total*100);
+    row.innerHTML+=`<div class="card phase-card"><h3>${p.name}</h3><span style="font-size:12px;color:var(--muted)">Days ${p.from}-${p.to} · ${c}/${total}</span><div class="bar"><i style="width:${pc}%"></i></div></div>`;
+  });
+}
+
+function renderRoadmap(){
+  const grid=document.getElementById('roadmapGrid'); grid.innerHTML='';
+  for(let d=1;d<=90;d++){
+    const done=!!S.completedDays[d];
+    const div=document.createElement('div');
+    div.className='day-card'+(done?' done':'')+(S.selectedDay===d?' selected':'');
+    div.innerHTML=`<b>Day ${d}</b><p>${TOPICS[d-1]}</p><span class="badge">${done?'Completed':'Pending'}</span>
+      <input type="checkbox" style="float:right" ${done?'checked':''}>`;
+    div.querySelector('input').addEventListener('click',e=>{
+      e.stopPropagation();
+      if(e.target.checked) S.completedDays[d]=true; else delete S.completedDays[d];
+      save(); renderRoadmap(); renderDashboard();
+    });
+    div.addEventListener('click',()=>{S.selectedDay=d; save(); setActiveNav('today'); renderAll();});
+    grid.appendChild(div);
+  }
+}
+
+function dueLabel(due){
+  if(!due) return '';
+  const t=todayStr(), tom=new Date(Date.now()+86400000).toISOString().slice(0,10);
+  if(due<t) return '<span class="due overdue">Overdue</span>';
+  if(due===t) return '<span class="due today">Today</span>';
+  if(due===tom) return '<span class="due tomorrow">Tomorrow</span>';
+  return '<span class="due upcoming">Upcoming</span>';
+}
+
+let activeFilter='all';
+function renderToday(){
+  const day=S.selectedDay||currentDayNum();
+  document.getElementById('td-day-label').textContent='Day '+day;
+  document.getElementById('td-topic').textContent=TOPICS[day-1];
+  document.getElementById('notesDayLabel').textContent='Day '+day;
+  const list=checklistFor(day);
+  const doneCount=list.filter(x=>x.done).length;
+  document.getElementById('td-progress').textContent=`${doneCount}/${list.length}`;
+  document.getElementById('td-bar').style.width=(doneCount/list.length*100)+'%';
+  const box=document.getElementById('defaultTasks'); box.innerHTML='';
+  list.forEach((item,idx)=>{
+    const row=document.createElement('div'); row.className='task-row'+(item.done?' done':'');
+    row.innerHTML=`<input type="checkbox" ${item.done?'checked':''}><span class="t-text">${item.t}</span>`;
+    row.querySelector('input').onchange=e=>{item.done=e.target.checked; save(); checkStreak(day,list); renderToday(); renderStreak();};
+    box.appendChild(row);
+  });
+
+  // custom tasks
+  const cbox=document.getElementById('customTasks'); cbox.innerHTML='';
+  let tasks=S.customTasks;
+  if(activeFilter==='active') tasks=tasks.filter(t=>!t.done);
+  if(activeFilter==='completed') tasks=tasks.filter(t=>t.done);
+  tasks.forEach(t=>{
+    const row=document.createElement('div'); row.className='task-row'+(t.done?' done':'');
+    const pri = t.pri==='High'?'🔴':t.pri==='Low'?'🟢':'🟡';
+    row.innerHTML=`<input type="checkbox" ${t.done?'checked':''}>
+      <span class="t-text" data-edit="${t.id}">${t.text}</span>
+      <select class="pri" data-pri="${t.id}"><option ${t.pri==='High'?'selected':''}>High</option><option ${t.pri==='Medium'?'selected':''}>Medium</option><option ${t.pri==='Low'?'selected':''}>Low</option></select>
+      ${dueLabel(t.due)}
+      <button class="small-btn" data-editbtn="${t.id}">Edit</button>
+      <button class="small-btn" data-del="${t.id}">Delete</button>`;
+    row.querySelector('input').onchange=e=>{t.done=e.target.checked; save(); renderToday();};
+    row.querySelector('[data-pri]').onchange=e=>{t.pri=e.target.value; save(); renderToday();};
+    row.querySelector('[data-del]').onclick=()=>{S.customTasks=S.customTasks.filter(x=>x.id!==t.id); save(); renderToday();};
+    row.querySelector('[data-editbtn]').onclick=()=>{
+      const span=row.querySelector('[data-edit]');
+      const nv=prompt('Edit task:', t.text);
+      if(nv!==null && nv.trim()){t.text=nv.trim(); save(); renderToday();}
+    };
+    cbox.appendChild(row);
+  });
+}
+function checkStreak(day,list){
+  const allDone=list.every(x=>x.done);
+  if(!allDone) return;
+  const t=todayStr();
+  if(S.streak.lastDate===t) return; // already counted today
+  if(S.streak.lastDate){
+    const gap=Math.floor((new Date(t)-new Date(S.streak.lastDate))/86400000);
+    S.streak.current = gap===1 ? S.streak.current+1 : 1;
+  } else { S.streak.current=1; }
+  S.streak.lastDate=t;
+  if(S.streak.current>S.streak.longest) S.streak.longest=S.streak.current;
+  save();
+}
+document.getElementById('addTaskBtn').onclick=addTask;
+document.getElementById('newTaskText').addEventListener('keydown',e=>{if(e.key==='Enter') addTask();});
+function addTask(){
+  const txt=document.getElementById('newTaskText').value.trim();
+  if(!txt) return;
+  S.customTasks.push({id:Date.now(), text:txt, done:false, pri:document.getElementById('newTaskPri').value, due:document.getElementById('newTaskDue').value});
+  document.getElementById('newTaskText').value=''; document.getElementById('newTaskDue').value='';
+  save(); renderToday();
+}
+document.querySelectorAll('.filter-btn[data-filter]').forEach(b=>b.addEventListener('click',()=>{
+  document.querySelectorAll('.filter-btn[data-filter]').forEach(x=>x.classList.remove('active'));
+  b.classList.add('active'); activeFilter=b.dataset.filter; renderToday();
+}));
+document.getElementById('clearCompleted').onclick=()=>{S.customTasks=S.customTasks.filter(t=>!t.done); save(); renderToday();};
+
+function renderLearning(){
+  const box=document.getElementById('learningList'); box.innerHTML='';
+  PHASES.forEach(p=>{
+    box.innerHTML+=`<h3 style="margin-top:18px">${p.name} (Days ${p.from}-${p.to})</h3>`;
+    let inner='';
+    for(let d=p.from;d<=p.to;d++){
+      const done=!!S.completedDays[d];
+      inner+=`<div class="task-row${done?' done':''}"><span class="t-text">Day ${d} — ${TOPICS[d-1]}</span>${done?'<span class="badge">Done</span>':''}</div>`;
+    }
+    box.innerHTML+=`<div class="card">${inner}</div>`;
+  });
+}
+
+function renderProjects(){
+  const box=document.getElementById('projectsList'); box.innerHTML='';
+  const order=['Planned','In Progress','Completed'];
+  S.projects.forEach(p=>{
+    const cls = p.status==='Planned'?'status-planned':p.status==='In Progress'?'status-progress':'status-completed';
+    box.innerHTML+=`<div class="card project-card"><h3>${p.name}</h3><p class="subtle" style="margin:4px 0 10px">${p.tech}</p>
+      <button class="status-pill ${cls}" data-proj="${p.id}">${p.status}</button></div>`;
+  });
+  box.querySelectorAll('[data-proj]').forEach(btn=>btn.onclick=()=>{
+    const p=S.projects.find(x=>x.id==btn.dataset.proj);
+    const i=order.indexOf(p.status); p.status=order[(i+1)%3]; save(); renderProjects();
+  });
+}
+
+const HABITS=["Java Coding","SQL Practice","Spring Boot","Project Work","Interview Prep","Job Applications"];
+function weekDates(){
+  const now=new Date(); const day=now.getDay(); const monday=new Date(now); monday.setDate(now.getDate()-((day+6)%7));
+  return [...Array(7)].map((_,i)=>{const d=new Date(monday); d.setDate(monday.getDate()+i); return d.toISOString().slice(0,10);});
+}
+function renderStreak(){
+  document.getElementById('s-current').textContent=S.streak.current;
+  document.getElementById('s-longest').textContent=S.streak.longest;
+  const dates=weekDates();
+  let html='<table class="habit-table"><tr><th>Habit</th>'+dates.map(d=>`<th>${d.slice(5)}</th>`).join('')+'</tr>';
+  HABITS.forEach(h=>{
+    html+=`<tr><td style="text-align:left">${h}</td>`+dates.map(d=>{
+      const on = S.habits[h]&&S.habits[h][d];
+      return `<td class="${on?'on':''}" data-h="${h}" data-d="${d}">${on?'✓':''}</td>`;
+    }).join('')+'</tr>';
+  });
+  html+='</table>';
+  document.getElementById('habitTable').innerHTML=html;
+  document.querySelectorAll('#habitTable td[data-h]').forEach(td=>td.onclick=()=>{
+    const h=td.dataset.h,d=td.dataset.d;
+    S.habits[h]=S.habits[h]||{};
+    S.habits[h][d]=!S.habits[h][d];
+    save(); renderStreak();
+  });
+}
+
+function renderJobs(){
+  const jobs=S.jobs;
+  const stats=[["Total Applications",jobs.length],["Interviews",jobs.filter(j=>j.status==='Interview').length],["Selected",jobs.filter(j=>j.status==='Selected').length],["Rejected",jobs.filter(j=>j.status==='Rejected').length]];
+  document.getElementById('jobStats').innerHTML=stats.map(s=>`<div class="card stat"><b>${s[1]}</b><span>${s[0]}</span></div>`).join('');
+  let html='<tr><th>Company</th><th>Role</th><th>Date</th><th>Link</th><th>Status</th><th></th></tr>';
+  jobs.forEach(j=>{
+    html+=`<tr><td>${j.company}</td><td>${j.role}</td><td>${j.date||'-'}</td>
+      <td>${j.link?`<a href="${j.link}" target="_blank">Open</a>`:'-'}</td>
+      <td><select data-jstatus="${j.id}"><option ${j.status==='Applied'?'selected':''}>Applied</option><option ${j.status==='Assessment'?'selected':''}>Assessment</option><option ${j.status==='Interview'?'selected':''}>Interview</option><option ${j.status==='Selected'?'selected':''}>Selected</option><option ${j.status==='Rejected'?'selected':''}>Rejected</option></select></td>
+      <td><button class="small-btn" data-jdel="${j.id}">Delete</button></td></tr>`;
+  });
+  document.getElementById('jobsTable').innerHTML=html;
+  document.querySelectorAll('[data-jstatus]').forEach(sel=>sel.onchange=()=>{
+    S.jobs.find(j=>j.id==sel.dataset.jstatus).status=sel.value; save(); renderJobs();
+  });
+  document.querySelectorAll('[data-jdel]').forEach(btn=>btn.onclick=()=>{
+    S.jobs=S.jobs.filter(j=>j.id!=btn.dataset.jdel); save(); renderJobs();
+  });
+}
+document.getElementById('addJobBtn').onclick=()=>{
+  const company=document.getElementById('jobCompany').value.trim();
+  const role=document.getElementById('jobRole').value.trim();
+  if(!company||!role) return alert('Company and Role are required.');
+  S.jobs.push({id:Date.now(), company, role, date:document.getElementById('jobDate').value, link:document.getElementById('jobLink').value.trim(), status:document.getElementById('jobStatus').value});
+  ['jobCompany','jobRole','jobDate','jobLink'].forEach(id=>document.getElementById(id).value='');
+  save(); renderJobs();
+};
+
+function renderNotes(){
+  const day=S.selectedDay||currentDayNum();
+  document.getElementById('notesArea').value = S.notes[day]||'';
+}
+document.getElementById('notesArea').addEventListener('input',e=>{
+  const day=S.selectedDay||currentDayNum();
+  S.notes[day]=e.target.value; save();
+});
+
+document.getElementById('exportBtn').onclick=()=>{
+  const blob=new Blob([JSON.stringify(S,null,2)],{type:'application/json'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='java90-progress.json'; a.click();
+};
+document.getElementById('importFile').addEventListener('change',e=>{
+  const file=e.target.files[0]; if(!file) return;
+  const reader=new FileReader();
+  reader.onload=()=>{
+    try{ S=JSON.parse(reader.result); save(); applyTheme(); renderAll(); alert('Progress imported successfully.'); }
+    catch(err){ alert('Invalid JSON file.'); }
+  };
+  reader.readAsText(file);
+});
+document.getElementById('resetBtn').onclick=()=>{
+  if(confirm('This will permanently erase all your progress, tasks, notes and settings. Continue?')){
+    localStorage.removeItem(DEF_KEY); S=defaultState(); save(); applyTheme(); renderAll();
+  }
+};
+
+function renderAll(){
+  renderDashboard(); renderRoadmap(); renderToday(); renderLearning();
+  renderProjects(); renderStreak(); renderJobs(); renderNotes();
+}
+applyTheme();
+renderAll();
+</script>
+</body>
+</html>
